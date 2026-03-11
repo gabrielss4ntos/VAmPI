@@ -33,3 +33,31 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:python"
+  bandit:
+    name: SAST - Bandit
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Bandit with SARIF support
+      run: pip install bandit[sarif]
+
+    - name: Run Bandit and generate SARIF
+      run: bandit -r . -f sarif -o bandit-results.sarif || true
+
+    - name: Upload Bandit results to GitHub Security
+      if: always() && hashFiles('bandit-results.sarif') != ''
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: bandit-results.sarif
+        category: bandit-sast
