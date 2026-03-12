@@ -98,7 +98,7 @@ jobs:
             -c /zap/wrk/.github/zap-rules.tsv \
             -r /zap/wrk/zap-output/zap-report.html \
             -w /zap/wrk/zap-output/zap-report.md \
-            -J /zap/wrk/zap-output/zap-report.json \
+            -J /zap/wrk/zap-output/zap-report.sarif \
             -I
         continue-on-error: true
   
