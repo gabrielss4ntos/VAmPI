@@ -87,18 +87,18 @@ jobs:
       - name: DAST - Run OWASP ZAP API Scan
         run: |
           mkdir -p zap-output
+          sudo chown -R 1000:1000 zap-output
           docker run --name zap --network vampi_default \
-            -v $(pwd):/zap/wrk/:ro \
-            -v $(pwd)/zap-output:/zap/wrk/output:rw \
+            -v $(pwd):/zap/wrk/:rw \
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-api-scan.py \
             -t /zap/wrk/openapi_specs/openapi3.yml \
             -f openapi \
             -O http://vampi-vulnerable:5000 \
             -c /zap/wrk/.github/zap-rules.tsv \
-            -r /zap/wrk/output/zap-report.html \
-            -w /zap/wrk/output/zap-report.md \
-            -J /zap/wrk/output/zap-report.sarif \
+            -r /zap/wrk/zap-output/zap-report.html \
+            -w /zap/wrk/zap-output/zap-report.md \
+            -J /zap/wrk/zap-output/zap-report.json \
             -I
         continue-on-error: true
   
