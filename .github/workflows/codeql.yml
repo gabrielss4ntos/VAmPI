@@ -98,7 +98,7 @@ jobs:
             -c /zap/wrk/.github/zap-rules.tsv \
             -r /zap/wrk/zap-output/zap-report.html \
             -w /zap/wrk/zap-output/zap-report.md \
-            -J /zap/wrk/zap-output/zap-report.sarif \
+            -J /zap/wrk/zap-output/zap-report.json \
             -I
         continue-on-error: true
   
@@ -107,15 +107,8 @@ jobs:
         if: always()
         with:
           name: zap-dast-report
-          path: zap-output/
-          
-      - name: "Upload ZAP Results to GitHub Security"
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: "zap-output/zap-report.sarif"
-          category: "owasp-zap-dast"
-      
+          path: zap-output/          
+    
       - name: Shutdown Application
         if: always()
         run: docker compose down
