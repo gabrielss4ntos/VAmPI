@@ -1,0 +1,53 @@
+# ZAP Rules Configuration for VAmPI
+# Format: RuleID	Action	Description
+# Actions: WARN, IGNORE, FAIL
+# Focused on API vulnerabilities relevant to VAmPI
+
+# === CRITICAL - SQL Injection & Command Injection ===
+40018	WARN	SQL Injection
+40019	WARN	SQL Injection (MySQL)
+40020	WARN	SQL Injection (Hypersonic)
+40021	WARN	SQL Injection (Oracle)
+40022	WARN	SQL Injection (PostgreSQL)
+90020	WARN	Remote OS Command Injection
+
+# === HIGH - Path Traversal & XSS ===
+6	WARN	Path Traversal
+40012	WARN	Cross Site Scripting (Reflected)
+40014	WARN	Cross Site Scripting (Persistent)
+40016	WARN	Cross Site Scripting (Persistent) - Prime
+40017	WARN	Cross Site Scripting (Persistent) - Spider
+
+# === MEDIUM - Information Disclosure ===
+10023	WARN	Information Disclosure - Debug Error Messages
+90022	WARN	Application Error Disclosure
+10056	WARN	X-Debug-Token Information Leak
+90033	WARN	Loosely Scoped Cookie
+
+# === LOW - Authentication & Session ===
+10010	WARN	Cookie No HttpOnly Flag
+10011	WARN	Cookie Without Secure Flag
+10054	WARN	Cookie without SameSite Attribute
+10098	WARN	Cross-Domain Misconfiguration
+10105	WARN	Weak Authentication Method
+
+# === SECURITY HEADERS (Keep minimal) ===
+10021	WARN	X-Content-Type-Options Header Missing
+10035	WARN	Strict-Transport-Security Header Not Set
+
+# === IGNORE - Not relevant for REST API testing ===
+10020	IGNORE	X-Frame-Options Header
+10038	IGNORE	Content Security Policy (CSP) Header Not Set
+10055	IGNORE	CSP: Wildcard Directive
+10063	IGNORE	Permissions Policy Header Not Set
+10049	IGNORE	Non-Storable Content
+10050	IGNORE	Retrieved from Cache
+10096	IGNORE	Timestamp Disclosure
+10109	IGNORE	Modern Web Application
+10015	IGNORE	Incomplete or No Cache-control Header Set
+10037	IGNORE	Server Leaks Information via X-Powered-By
+10036	IGNORE	Server Leaks Version Information
+90005	IGNORE	Sec-Fetch-Dest Header is Missing
+90004	IGNORE	Sec-Fetch-Mode Header is Missing
+90003	IGNORE	Sec-Fetch-Site Header is Missing
+90002	IGNORE	Sec-Fetch-User Header is Missing
