@@ -1,4 +1,4 @@
-name: "SAST - CodeQL"
+name: "DevSecOps - Security Pipeline"
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   analyze:
-    name: CodeQL Analysis
+    name: SAST - Github CodeQL Analysis
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -33,8 +33,8 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:python"
-  bandit:
-    name: SAST - Bandit
+  bandit: 
+    name: SAST - Bandit Python native Analysis
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -61,3 +61,54 @@ jobs:
       with:
         sarif_file: bandit-results.sarif
         category: bandit-sast
+  dast:
+    name: Dynamic Application Security Testing
+    runs-on: ubuntu-latest
+    needs: [analyze, bandit]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build and starting Application
+        run: |
+          docker compose up -d vampi-vulnerable
+          echo "Waiting for VAmPI to start..."
+          sleep 10
+
+      - name: Initialize Database
+        run: |
+          curl -s http://localhost:5002/createdb || true
+          sleep 2
+
+      - name: Check if API is Running
+        run: |
+          curl -s http://localhost:5002/ | head -c 200
+
+      - name: DAST - Run OWASP ZAP API Scan
+        run: |
+          mkdir -p zap-output
+          sudo chown -R 1000:1000 zap-output
+          docker run --name zap --network vampi_default \
+            -v $(pwd):/zap/wrk/:rw \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-api-scan.py \
+            -t /zap/wrk/openapi_specs/openapi3.yml \
+            -f openapi \
+            -O http://vampi-vulnerable:5000 \
+            -c /zap/wrk/.github/zap-rules.tsv \
+            -r /zap/wrk/zap-output/zap-report.html \
+            -w /zap/wrk/zap-output/zap-report.md \
+            -J /zap/wrk/zap-output/zap-report.json \
+            -I
+        continue-on-error: true
+  
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-dast-report
+          path: zap-output/          
+    
+      - name: Shutdown Application
+        if: always()
+        run: docker compose down
