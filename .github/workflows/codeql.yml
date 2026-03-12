@@ -86,28 +86,29 @@ jobs:
 
       - name: DAST - Run OWASP ZAP API Scan
         run: |
+          mkdir -p zap-output
           docker run --name zap --network vampi_default \
-            -v $(pwd):/zap/wrk/:rw \
+            -v $(pwd):/zap/wrk/:ro \
+            -v $(pwd)/zap-output:/zap/wrk/output:rw \
             -t ghcr.io/zaproxy/zaproxy:stable \
             zap-api-scan.py \
-            -t http://vampi-vulnerable:5000/openapi.json \
+            -t /zap/wrk/openapi_specs/openapi3.yml \
             -f openapi \
-            -c /zap/wrk/.zap/rules.tsv \
-            -r zap-report.html \
-            -w zap-report.md \
-            -J zap-report.sarif \
+            -O http://vampi-vulnerable:5000 \
+            -c /zap/wrk/.github/zap-rules.tsv \
+            -r /zap/wrk/output/zap-report.html \
+            -w /zap/wrk/output/zap-report.md \
+            -J /zap/wrk/output/zap-report.sarif \
             -I
         continue-on-error: true
-
+  
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: zap-dast-report
-          path: |
-            zap-report.html
-            zap-report.md
-            zap-report.sarif
+          path: zap-output/
+  
       - name: Shutdown Application
         if: always()
         run: docker compose down
